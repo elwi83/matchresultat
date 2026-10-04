@@ -28,6 +28,27 @@ matcher importerade från `season 25 26.xlsx`. Historiska resultat är
 skrivskyddade på webbplatsen. Om datum, matchnummer eller resultat saknas i
 underlaget visas detta tydligt i stället för att uppgifter antas.
 
+Sidan `matchschema.html` samlar 25 P15-matcher och 20 P14-matcher som kolumner
+och 28 spelare som rader. Ursprungliga X-markeringar är importerade från
+`Segeltorp P15 .xlsx`, medan de officiella P14-matcherna kommer från
+`p14.xlsx`. P15 har ljuslila bakgrund och P14 ljusgrön. Matcherna grupperas med
+veckonummer och en tydlig avdelare när en ny vecka börjar. Markeringarna kan
+ändras genom att klicka på en ruta och synkroniseras mellan enheter via
+Supabase-tabellen `match_assignments`. Varje spelare visar totalt antal kallade
+matcher samt antal i A Södra och P14 när respektive antal är större än noll.
+Under spelarna finns en summeringsrad per match och därefter tränarnas schema.
+En ruta växlar mellan tom, kallad (`X`) och ej tillgänglig (`–`).
+
+Kolumnen **P14** direkt efter spelarnamnet styr om spelaren är tillgänglig för
+P14. Spelare med **Ja** kan tilldelas P14-matcher. När kolumnen är tom visas
+spelaren automatiskt som ej tillgänglig på samtliga P14-matcher. Spelare med
+importerade P14-tilldelningar har **Ja** som ursprungsvärde.
+
+Kolumnen **DS** mellan spelarnamnet och P14 kan växlas mellan tom, A, AB och B.
+A visas ljusgrönt, AB ljuslila och B ljusblått. Raden **Fördelning A / AB / B**
+under spelarantalet visar en staplad fördelning av de kallade och
+DS-klassificerade spelarna för varje match.
+
 Matcher vars starttid har passerat visas under **Resultat**. Om inget resultat
 har registrerats visas texten **Resultat saknas**. Övriga matcher visas under
 **Kommande**.

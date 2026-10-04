@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Spelarschema för Segeltorp P15 säsongen 2026/2027." />
+    <title>Matchschema 2026/2027 – Matchresultat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="schedule.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="config.js" defer></script>
+    <script src="schedule-data.js" defer></script>
+    <script src="schedule.js" defer></script>
+  </head>
+  <body class="locked">
+    <section class="login-screen" id="login-screen" aria-labelledby="login-title">
+      <div class="login-card">
+        <div class="login-brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40">
+              <path d="M8 7h10l5 8-5 8H8l5-8z" />
+              <path d="M22 17h10l-5 8 5 8H22l-5-8z" />
+            </svg>
+          </span>
+        </div>
+        <p class="eyebrow dark">Matchresultat</p>
+        <h1 id="login-title">Logga in</h1>
+        <p class="login-copy">Ange dina uppgifter för att fortsätta till sidan.</p>
+        <form id="login-form">
+          <label for="username">Användarnamn</label>
+          <input id="username" name="username" type="text" autocomplete="username" required />
+          <label for="password">Lösenord</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+          <p class="login-error" id="login-error" role="alert" aria-live="polite"></p>
+          <button class="login-button" type="submit">Logga in</button>
+        </form>
+      </div>
+    </section>
+
+    <div class="site-content" id="site-content" aria-hidden="true">
+      <header class="site-header">
+        <a class="brand" href="index.html" aria-label="Matchresultat startsida">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40" role="img">
+              <path d="M8 7h10l5 8-5 8H8l5-8z" />
+              <path d="M22 17h10l-5 8 5 8H22l-5-8z" />
+            </svg>
+          </span>
+          <span>Match<span>resultat</span></span>
+        </a>
+
+        <nav class="main-nav" aria-label="Huvudmeny">
+          <a href="index.html">Aktuell säsong</a>
+          <a class="active" href="matchschema.html">Matchschema</a>
+          <a href="historik.html">Historik</a>
+          <button class="logout-button" id="logout-button" type="button">Logga ut</button>
+        </nav>
+
+        <button class="menu-button" type="button" aria-expanded="false" aria-label="Öppna meny">
+          <span></span><span></span><span></span>
+        </button>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="hero-content">
+            <h1>Matchschema <span>2026/2027</span></h1>
+          </div>
+        </section>
+
+        <section class="schedule-section">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow dark">Segeltorp P15</p>
+              <h2>Spelarschema</h2>
+            </div>
+            <div class="schedule-summary">
+              <strong id="schedule-match-count">45</strong>
+              <span>matcher för P14 och P15</span>
+            </div>
+          </div>
+
+          <div class="schedule-help">
+            <p>
+              Klicka på en ruta för att växla mellan tom, kallad och ej tillgänglig.
+              Ändringarna sparas automatiskt.
+            </p>
+            <div class="schedule-legend">
+              <span><i class="assignment-example">X</i> Kallad</span>
+              <span><i class="unavailable-example">–</i> Ej tillgänglig</span>
+              <span><i class="empty-example"></i> Inte kallad</span>
+              <span><i class="category-example p15-example"></i> P15</span>
+              <span><i class="category-example p14-example"></i> P14</span>
+              <span><i class="category-example ds-a-example"></i> DS A</span>
+              <span><i class="category-example ds-ab-example"></i> DS AB</span>
+              <span><i class="category-example ds-b-example"></i> DS B</span>
+            </div>
+          </div>
+
+          <p class="save-status" id="save-status" role="status" aria-live="polite"></p>
+
+          <div class="schedule-table-card">
+            <div class="schedule-table-scroll">
+              <table class="schedule-table" id="schedule-table">
+                <thead id="schedule-head"></thead>
+                <tbody id="schedule-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
