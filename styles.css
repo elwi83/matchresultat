@@ -276,13 +276,12 @@ input {
 
 .hero {
   position: relative;
-  display: grid;
-  min-height: 480px;
-  padding: 82px clamp(24px, 8vw, 130px);
+  display: flex;
+  min-height: 260px;
+  padding: 64px clamp(24px, 8vw, 130px);
   overflow: hidden;
   color: white;
   background: var(--green);
-  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
 }
 
 .hero::before {
@@ -299,7 +298,8 @@ input {
 .hero-content {
   position: relative;
   z-index: 2;
-  align-self: center;
+  display: flex;
+  align-items: center;
 }
 
 .eyebrow {
@@ -332,78 +332,6 @@ h1 {
 h1 span {
   color: var(--lime);
 }
-
-.hero-copy {
-  max-width: 500px;
-  margin: 28px 0 0;
-  color: rgb(255 255 255 / 73%);
-  font-size: 17px;
-  line-height: 1.65;
-}
-
-.hero-graphic {
-  position: relative;
-}
-
-.court-lines {
-  position: absolute;
-  top: -120px;
-  right: -170px;
-  width: 650px;
-  height: 650px;
-  border: 2px solid rgb(255 255 255 / 12%);
-  border-radius: 50%;
-}
-
-.court-lines::before,
-.court-lines::after {
-  position: absolute;
-  content: "";
-  border: 2px solid rgb(255 255 255 / 10%);
-}
-
-.court-lines::before {
-  top: 50%;
-  right: -100px;
-  width: 800px;
-  height: 0;
-}
-
-.court-lines::after {
-  top: 110px;
-  left: 135px;
-  width: 380px;
-  height: 430px;
-  border-radius: 50%;
-}
-
-.ball {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  left: 50%;
-  width: clamp(170px, 19vw, 260px);
-  aspect-ratio: 1;
-  background: var(--lime);
-  border-radius: 50%;
-  box-shadow: 22px 35px 70px rgb(1 36 23 / 40%);
-  transform: translate(-35%, -50%);
-}
-
-.ball i {
-  position: absolute;
-  width: 18%;
-  height: 18%;
-  background: var(--green);
-  border-radius: 50%;
-  box-shadow: inset 5px 7px 0 rgb(0 0 0 / 15%);
-}
-
-.ball i:nth-child(1) { top: 17%; left: 25%; }
-.ball i:nth-child(2) { top: 23%; right: 19%; width: 14%; height: 14%; }
-.ball i:nth-child(3) { top: 48%; left: 44%; width: 20%; height: 20%; }
-.ball i:nth-child(4) { bottom: 15%; left: 18%; width: 14%; height: 14%; }
-.ball i:nth-child(5) { right: 14%; bottom: 14%; width: 12%; height: 12%; }
 
 .dashboard,
 .matches-section {
@@ -986,55 +914,9 @@ tbody tr:last-child td {
   line-height: 1.75;
 }
 
-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 28px clamp(24px, 6vw, 96px);
-  color: var(--muted);
-  background: #0d2f23;
-  font-size: 12px;
-}
-
-.footer-brand {
-  color: white;
-}
-
-.footer-brand .brand-mark {
-  color: var(--green);
-  background: var(--lime);
-}
-
-.footer-brand > span:last-child > span {
-  color: var(--lime);
-}
-
-footer a:last-child:hover {
-  color: white;
-}
-
 @media (max-width: 900px) {
   .hero {
-    min-height: 450px;
-    grid-template-columns: 1fr;
-  }
-
-  .hero-content {
-    z-index: 3;
-  }
-
-  .hero-graphic {
-    position: absolute;
-    inset: 0;
-    opacity: 0.55;
-  }
-
-  .ball {
-    top: 54%;
-    left: auto;
-    right: -15px;
-    width: 210px;
-    transform: translateY(-50%);
+    min-height: 240px;
   }
 
   .stats-strip {
@@ -1099,18 +981,12 @@ footer a:last-child:hover {
   }
 
   .hero {
-    min-height: 510px;
-    padding: 72px 24px;
+    min-height: 210px;
+    padding: 52px 24px;
   }
 
   h1 {
     font-size: clamp(44px, 14vw, 62px);
-  }
-
-  .ball {
-    top: 72%;
-    right: -50px;
-    width: 180px;
   }
 
   .dashboard,
@@ -1173,12 +1049,6 @@ footer a:last-child:hover {
     gap: 30px;
     padding: 70px 24px;
     grid-template-columns: 1fr;
-  }
-
-  footer {
-    align-items: flex-start;
-    gap: 20px;
-    flex-direction: column;
   }
 
   .login-card {

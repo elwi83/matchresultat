@@ -537,8 +537,6 @@ mainNav.addEventListener("click", () => {
   menuButton.setAttribute("aria-expanded", "false");
 });
 
-document.querySelector("#current-year").textContent = new Date().getFullYear();
-
 supabaseClient.auth.getSession().then(({ data, error }) => {
   if (error) {
     console.error("Kunde inte kontrollera Supabase-sessionen.", error);
