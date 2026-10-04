@@ -20,6 +20,7 @@ const loginEmail = "torpet15@elwi83.se";
 let activeSeries = Object.keys(series)[0];
 let activeTab = "results";
 let editingMatchNumber = null;
+let selectedTeamId = null;
 let savedResults = {};
 
 function showSite() {
@@ -255,9 +256,17 @@ function renderStandings() {
         .join("");
 
       return `
-        <tr>
+        <tr class="${selectedTeamId === team.id ? "selected-team" : ""}">
           <td class="position ${positionClass(index, standings.length)}">${index + 1}</td>
-          <td><span class="team">${badge(team)}${team.name}</span></td>
+          <td>
+            <button
+              class="team team-filter-button"
+              type="button"
+              data-team-id="${team.id}"
+              aria-pressed="${selectedTeamId === team.id}"
+              aria-label="${selectedTeamId === team.id ? `Visa alla lag, ${team.name} är valt` : `Visa endast matcher för ${team.name}`}"
+            >${badge(team)}<span>${team.name}</span></button>
+          </td>
           <td>${team.played}</td>
           <td>${team.wins}</td>
           <td>${team.draws}</td>
@@ -370,11 +379,19 @@ function renderMatches() {
   const data = series[activeSeries];
   const isResults = activeTab === "results";
   const now = new Date();
+  const selectedTeam = selectedTeamId ? teamById(data, selectedTeamId) : null;
+  const filterSummary = document.querySelector("#team-filter-summary");
+  filterSummary.hidden = !selectedTeam;
+  document.querySelector("#filtered-team-name").textContent = selectedTeam?.name ?? "";
+
   const matches = data.games
     .filter((match) => {
       const hasResult = Boolean(getMatchResult(match));
       const hasStarted = new Date(match[4]) < now;
-      return isResults ? hasStarted || hasResult : !hasStarted && !hasResult;
+      const belongsToSelectedTeam =
+        !selectedTeamId || match[0] === selectedTeamId || match[1] === selectedTeamId;
+      const belongsToTab = isResults ? hasStarted || hasResult : !hasStarted && !hasResult;
+      return belongsToSelectedTeam && belongsToTab;
     })
     .sort((a, b) => {
       const difference = new Date(a[4]) - new Date(b[4]);
@@ -382,8 +399,11 @@ function renderMatches() {
     });
 
   if (!matches.length) {
+    const subject = selectedTeam ? selectedTeam.name : "Serien";
     matchesList.innerHTML = `<p class="empty-matches">${
-      isResults ? "Det finns inga tidigare matcher i serien." : "Det finns inga kommande matcher i serien."
+      isResults
+        ? `${subject} har inga tidigare matcher att visa.`
+        : `${subject} har inga kommande matcher att visa.`
     }</p>`;
     return;
   }
@@ -477,6 +497,22 @@ matchesList.addEventListener("click", (event) => {
   if (button) openResultDialog(button.dataset.matchNumber);
 });
 
+standingsBody.addEventListener("click", (event) => {
+  const button = event.target.closest(".team-filter-button");
+  if (!button) return;
+
+  selectedTeamId = selectedTeamId === button.dataset.teamId ? null : button.dataset.teamId;
+  renderStandings();
+  renderMatches();
+  document.querySelector("#matcher").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+document.querySelector("#clear-team-filter").addEventListener("click", () => {
+  selectedTeamId = null;
+  renderStandings();
+  renderMatches();
+});
+
 resultForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const homeScore = Number.parseInt(document.querySelector("#home-score").value, 10);
@@ -540,6 +576,7 @@ Object.entries(series).forEach(([key, data]) => {
 
 seriesSelect.addEventListener("change", (event) => {
   activeSeries = event.target.value;
+  selectedTeamId = null;
   renderAll();
 });
 

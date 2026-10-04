@@ -27,6 +27,10 @@ Matcher vars starttid har passerat visas under **Resultat**. Om inget resultat
 har registrerats visas texten **Resultat saknas**. Övriga matcher visas under
 **Kommande**.
 
+Klicka på ett lag i serietabellen för att visa endast det lagets matcher. Det
+valda laget markeras i tabellen. Filtret tas bort genom att klicka på laget igen
+eller välja **Visa alla lag** ovanför matcherna.
+
 ## Registrera resultat
 
 Välj **Lägg till resultat** eller **Ändra resultat** på ett matchkort. Tabellen
