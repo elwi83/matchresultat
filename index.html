@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Tabeller, resultat och kommande matcher för svensk innebandy."
+    />
+    <title>Matchresultat – Innebandy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="config.js" defer></script>
+    <script src="match-data.js" defer></script>
+    <script src="script.js" defer></script>
+  </head>
+  <body class="locked">
+    <section class="login-screen" id="login-screen" aria-labelledby="login-title">
+      <div class="login-card">
+        <div class="login-brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40">
+              <path d="M8 7h10l5 8-5 8H8l5-8z" />
+              <path d="M22 17h10l-5 8 5 8H22l-5-8z" />
+            </svg>
+          </span>
+        </div>
+        <p class="eyebrow dark">Matchresultat</p>
+        <h1 id="login-title">Logga in</h1>
+        <p class="login-copy">Ange dina uppgifter för att fortsätta till sidan.</p>
+        <form id="login-form">
+          <label for="username">Användarnamn</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            autocomplete="username"
+            required
+          />
+          <label for="password">Lösenord</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+          <p class="login-error" id="login-error" role="alert" aria-live="polite"></p>
+          <button class="login-button" type="submit">Logga in</button>
+        </form>
+      </div>
+    </section>
+
+    <div class="site-content" id="site-content" aria-hidden="true">
+    <header class="site-header">
+      <a class="brand" href="#" aria-label="Matchresultat startsida">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" role="img">
+            <path d="M8 7h10l5 8-5 8H8l5-8z" />
+            <path d="M22 17h10l-5 8 5 8H22l-5-8z" />
+          </svg>
+        </span>
+        <span>Match<span>resultat</span></span>
+      </a>
+
+      <nav class="main-nav" aria-label="Huvudmeny">
+        <a class="active" href="#tabell">Tabell</a>
+        <a href="#matcher">Matcher</a>
+        <a href="#om">Om sidan</a>
+        <button class="logout-button" id="logout-button" type="button">Logga ut</button>
+      </nav>
+
+      <button class="menu-button" type="button" aria-expanded="false" aria-label="Öppna meny">
+        <span></span><span></span><span></span>
+      </button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-content">
+          <p class="eyebrow">Säsongen 2026/2027</p>
+          <h1>Allt om serien.<br /><span>På samma ställe.</span></h1>
+          <p class="hero-copy">
+            Följ tabellen, se de senaste resultaten och håll koll på nästa omgång.
+          </p>
+        </div>
+        <div class="hero-graphic" aria-hidden="true">
+          <div class="court-lines"></div>
+          <div class="ball">
+            <i></i><i></i><i></i><i></i><i></i>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard" id="tabell">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow dark">Aktuell ställning</p>
+            <h2>Serietabell</h2>
+          </div>
+          <label class="select-wrap">
+            <span class="sr-only">Välj serie</span>
+            <select id="series-select"></select>
+          </label>
+        </div>
+
+        <div class="stats-strip" aria-label="Sammanfattning av serien">
+          <div>
+            <span class="stat-icon">◆</span>
+            <p><strong id="stat-teams">–</strong><span>Lag i serien</span></p>
+          </div>
+          <div>
+            <span class="stat-icon">◷</span>
+            <p><strong id="stat-games">–</strong><span>Spelade matcher</span></p>
+          </div>
+          <div>
+            <span class="stat-icon">●</span>
+            <p><strong id="stat-goals">–</strong><span>Gjorda mål</span></p>
+          </div>
+          <div>
+            <span class="stat-icon">⌁</span>
+            <p><strong id="stat-average">–</strong><span>Mål per match</span></p>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Lag</th>
+                  <th scope="col" title="Spelade matcher">S</th>
+                  <th scope="col" title="Vinster">V</th>
+                  <th scope="col" title="Oavgjorda">O</th>
+                  <th scope="col" title="Förluster">F</th>
+                  <th scope="col">+/−</th>
+                  <th scope="col">MS</th>
+                  <th scope="col">P</th>
+                  <th scope="col">Form</th>
+                </tr>
+              </thead>
+              <tbody id="standings-body"></tbody>
+            </table>
+          </div>
+          <div class="table-note">
+            Tabellen uppdateras automatiskt när resultat registreras.
+          </div>
+        </div>
+      </section>
+
+      <section class="analytics-section" aria-labelledby="analytics-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow dark">Baserat på registrerade resultat</p>
+            <h2 id="analytics-title">Matchbild</h2>
+          </div>
+          <p class="analytics-series" id="analytics-series"></p>
+        </div>
+
+        <div class="analytics-grid" aria-live="polite">
+          <article class="analytics-card">
+            <p>Alla matcher</p>
+            <strong id="large-difference-total">0</strong>
+            <h3>Stor målskillnad</h3>
+            <span>Mer än 10 mål i skillnad</span>
+          </article>
+          <article class="analytics-card">
+            <p>Segeltorp</p>
+            <strong id="segeltorp-large-total">0</strong>
+            <h3>Stor målskillnad</h3>
+            <span>
+              <b id="segeltorp-large-wins">0</b> vinster ·
+              <b id="segeltorp-large-losses">0</b> förluster
+            </span>
+          </article>
+          <article class="analytics-card">
+            <p>Segeltorp</p>
+            <strong id="segeltorp-close-total">0</strong>
+            <h3>Jämna matcher</h3>
+            <span>
+              <b id="segeltorp-close-wins">0</b> vinster ·
+              <b id="segeltorp-close-losses">0</b> förluster ·
+              <b id="segeltorp-close-draws">0</b> oavgjorda
+            </span>
+          </article>
+          <article class="analytics-card alert-card">
+            <p>Segeltorp</p>
+            <strong id="segeltorp-uneven-losses">0</strong>
+            <h3>Ojämna förluster</h3>
+            <span>Förlust med minst 4 mål</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="matches-section" id="matcher">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow dark">Håll dig uppdaterad</p>
+            <h2>Matcher</h2>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Välj matcher">
+            <button class="tab active" type="button" role="tab" aria-selected="true" data-tab="results">
+              Resultat
+            </button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="upcoming">
+              Kommande
+            </button>
+          </div>
+        </div>
+        <div class="matches-grid" id="matches-list" aria-live="polite"></div>
+      </section>
+
+      <section class="about" id="om">
+        <div>
+          <p class="eyebrow">Matchresultat</p>
+          <h2>Innebandyn samlad.<br />Enkelt och tydligt.</h2>
+        </div>
+        <p>
+          Här hittar du aktuell tabell, spelade matcher och kommande omgångar.
+          Informationen uppdateras löpande under hela säsongen.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <a class="brand footer-brand" href="#">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40"><path d="M8 7h10l5 8-5 8H8l5-8z" /><path d="M22 17h10l-5 8 5 8H22l-5-8z" /></svg>
+        </span>
+        <span>Match<span>resultat</span></span>
+      </a>
+      <p>© <span id="current-year"></span> Matchresultat</p>
+      <a href="mailto:kontakt@matchresultat.se">kontakt@matchresultat.se</a>
+    </footer>
+
+    <dialog class="result-dialog" id="result-dialog" aria-labelledby="result-dialog-title">
+      <form id="result-form">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow dark">Registrera resultat</p>
+            <h2 id="result-dialog-title">Matchresultat</h2>
+          </div>
+          <button class="dialog-close" type="button" id="dialog-close" aria-label="Stäng">×</button>
+        </div>
+        <p class="dialog-meta" id="result-dialog-meta"></p>
+        <div class="score-inputs">
+          <label>
+            <span id="home-score-label">Hemmalag</span>
+            <input id="home-score" name="homeScore" type="number" min="0" step="1" required />
+          </label>
+          <span>–</span>
+          <label>
+            <span id="away-score-label">Bortalag</span>
+            <input id="away-score" name="awayScore" type="number" min="0" step="1" required />
+          </label>
+        </div>
+        <p class="login-error" id="result-error" role="alert" aria-live="polite"></p>
+        <div class="dialog-actions">
+          <button class="delete-result" id="delete-result" type="button">Ta bort resultat</button>
+          <button class="login-button" type="submit">Spara resultat</button>
+        </div>
+      </form>
+    </dialog>
+    </div>
+  </body>
+</html>
