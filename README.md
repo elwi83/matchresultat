@@ -23,6 +23,11 @@ Matchschemat i `match-data.js` är importerat från Excel-filen
 - Pojkar 2015 B Östra
 - Pojkar 2015 B Södra
 
+Sidan `historik.html` innehåller säsongen 2025/2026 med sex serier och 233
+matcher importerade från `season 25 26.xlsx`. Historiska resultat är
+skrivskyddade på webbplatsen. Om datum, matchnummer eller resultat saknas i
+underlaget visas detta tydligt i stället för att uppgifter antas.
+
 Matcher vars starttid har passerat visas under **Resultat**. Om inget resultat
 har registrerats visas texten **Resultat saknas**. Övriga matcher visas under
 **Kommande**.
@@ -51,6 +56,10 @@ och visar:
 - Segeltorps jämna matcher med högst 3 måls skillnad, uppdelat på vinster,
   förluster och oavgjorda.
 - Segeltorps förluster med minst 4 måls skillnad.
+
+Varje statistikruta visar även antalet träffar av totalt antal registrerade
+matcher samt motsvarande procentandel. Segeltorpsrutorna räknas mot antalet
+registrerade matcher där Segeltorp deltar.
 
 ## Inloggning
 

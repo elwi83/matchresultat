@@ -1,4 +1,5 @@
 const series = window.MATCH_SERIES;
+const isHistoryPage = document.body.dataset.page === "history";
 
 const seriesSelect = document.querySelector("#series-select");
 const standingsBody = document.querySelector("#standings-body");
@@ -39,6 +40,8 @@ function showLogin() {
 }
 
 async function loadRemoteResults() {
+  if (isHistoryPage) return true;
+
   const { data, error } = await supabaseClient
     .from("match_results")
     .select("match_number, home_score, away_score");
@@ -294,7 +297,9 @@ function renderStandings() {
 
 function calculateMatchAnalytics(data) {
   const analytics = {
+    completedTotal: 0,
     largeDifferenceTotal: 0,
+    segeltorpCompletedTotal: 0,
     segeltorpLargeTotal: 0,
     segeltorpLargeWins: 0,
     segeltorpLargeLosses: 0,
@@ -310,6 +315,7 @@ function calculateMatchAnalytics(data) {
     const result = getMatchResult(match);
     if (!result) return;
 
+    analytics.completedTotal += 1;
     const difference = Math.abs(result.home - result.away);
     if (difference > 10) analytics.largeDifferenceTotal += 1;
 
@@ -317,6 +323,7 @@ function calculateMatchAnalytics(data) {
     const isAway = match[1] === segeltorp?.id;
     if (!isHome && !isAway) return;
 
+    analytics.segeltorpCompletedTotal += 1;
     const segeltorpGoals = isHome ? result.home : result.away;
     const opponentGoals = isHome ? result.away : result.home;
 
@@ -341,6 +348,14 @@ function calculateMatchAnalytics(data) {
   return analytics;
 }
 
+function formatAnalyticsShare(count, total) {
+  const percentage = total ? (count / total) * 100 : 0;
+  const formattedPercentage = new Intl.NumberFormat("sv-SE", {
+    maximumFractionDigits: 1,
+  }).format(percentage);
+  return `${count} av ${total} matcher · ${formattedPercentage} %`;
+}
+
 function renderMatchAnalytics() {
   const data = series[activeSeries];
   const analytics = calculateMatchAnalytics(data);
@@ -363,9 +378,19 @@ function renderMatchAnalytics() {
     analytics.segeltorpCloseDraws;
   document.querySelector("#segeltorp-uneven-losses").textContent =
     analytics.segeltorpUnevenLosses;
+  document.querySelector("#large-difference-share").textContent =
+    formatAnalyticsShare(analytics.largeDifferenceTotal, analytics.completedTotal);
+  document.querySelector("#segeltorp-large-share").textContent =
+    formatAnalyticsShare(analytics.segeltorpLargeTotal, analytics.segeltorpCompletedTotal);
+  document.querySelector("#segeltorp-close-share").textContent =
+    formatAnalyticsShare(analytics.segeltorpCloseTotal, analytics.segeltorpCompletedTotal);
+  document.querySelector("#segeltorp-uneven-share").textContent =
+    formatAnalyticsShare(analytics.segeltorpUnevenLosses, analytics.segeltorpCompletedTotal);
 }
 
 function formatDate(dateString, includeTime = false) {
+  if (!dateString) return "Datum saknas";
+
   const date = new Date(dateString);
   const options = { weekday: "short", day: "numeric", month: "short" };
   if (includeTime) {
@@ -417,11 +442,23 @@ function renderMatches() {
       const homeScore = result ? result.home : "–";
       const awayScore = result ? result.away : "–";
       const status = result ? "Slut" : isResults ? "Resultat saknas" : "Kommande";
+      const round = match[6] ? `Omgång ${match[6]} · ` : "";
+      const matchDetails = [
+        match[5] || "Plats saknas",
+        match[7] ? `Match ${match[7]}` : null,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      const editButton = isHistoryPage
+        ? ""
+        : `<button class="edit-result-button" type="button" data-match-number="${match[7]}">
+              ${result ? "Ändra resultat" : "Lägg till resultat"}
+            </button>`;
 
       return `
         <article class="match-card">
           <div class="match-meta">
-            <span>Omgång ${match[6]} · ${formatDate(match[4], true)}</span>
+            <span>${round}${formatDate(match[4], true)}</span>
             <span class="${result ? "" : "missing-result"}">${status}</span>
           </div>
           <div class="match-team">
@@ -435,10 +472,8 @@ function renderMatches() {
             <strong class="match-score">${awayScore}</strong>
           </div>
           <div class="match-status">
-            <span>${match[5]} · Match ${match[7]}</span>
-            <button class="edit-result-button" type="button" data-match-number="${match[7]}">
-              ${result ? "Ändra resultat" : "Lägg till resultat"}
-            </button>
+            <span>${matchDetails}</span>
+            ${editButton}
           </div>
         </article>`;
     })

@@ -7,7 +7,7 @@
       name="description"
       content="Tabeller, resultat och kommande matcher för svensk innebandy."
     />
-    <title>Matchresultat – Innebandy</title>
+    <title>Historik 2025/2026 – Matchresultat</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -17,10 +17,10 @@
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="config.js" defer></script>
-    <script src="match-data.js" defer></script>
+    <script src="history-data.js" defer></script>
     <script src="script.js" defer></script>
   </head>
-  <body class="locked">
+  <body class="locked" data-page="history">
     <section class="login-screen" id="login-screen" aria-labelledby="login-title">
       <div class="login-card">
         <div class="login-brand">
@@ -59,7 +59,7 @@
 
     <div class="site-content" id="site-content" aria-hidden="true">
     <header class="site-header">
-      <a class="brand" href="#" aria-label="Matchresultat startsida">
+      <a class="brand" href="index.html" aria-label="Matchresultat startsida">
         <span class="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 40 40" role="img">
             <path d="M8 7h10l5 8-5 8H8l5-8z" />
@@ -70,10 +70,9 @@
       </a>
 
       <nav class="main-nav" aria-label="Huvudmeny">
-        <a class="active" href="#tabell">Tabell</a>
+        <a href="index.html">Aktuell säsong</a>
+        <a class="active" href="#tabell">Historik</a>
         <a href="#matcher">Matcher</a>
-        <a href="historik.html">Historik</a>
-        <a href="#om">Om sidan</a>
         <button class="logout-button" id="logout-button" type="button">Logga ut</button>
       </nav>
 
@@ -85,15 +84,15 @@
     <main>
       <section class="hero">
         <div class="hero-content">
-          <h1>Säsongen <span>2026/2027</span></h1>
+          <h1>Säsongen <span>2025/2026</span></h1>
         </div>
       </section>
 
       <section class="dashboard" id="tabell">
         <div class="section-heading">
           <div>
-            <p class="eyebrow dark">Aktuell ställning</p>
-            <h2>Serietabell</h2>
+            <p class="eyebrow dark">Historisk ställning</p>
+            <h2>Sluttabell</h2>
           </div>
           <label class="select-wrap">
             <span class="sr-only">Välj serie</span>
@@ -141,7 +140,7 @@
             </table>
           </div>
           <div class="table-note">
-            Tabellen uppdateras automatiskt när resultat registreras.
+            Sluttabellen är beräknad från resultaten för säsongen 2025/2026.
           </div>
         </div>
       </section>
@@ -197,15 +196,12 @@
       <section class="matches-section" id="matcher">
         <div class="section-heading">
           <div>
-            <p class="eyebrow dark">Håll dig uppdaterad</p>
-            <h2>Matcher</h2>
+            <p class="eyebrow dark">Säsongen 2025/2026</p>
+            <h2>Matchresultat</h2>
           </div>
           <div class="tabs" role="tablist" aria-label="Välj matcher">
             <button class="tab active" type="button" role="tab" aria-selected="true" data-tab="results">
               Resultat
-            </button>
-            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="upcoming">
-              Kommande
             </button>
           </div>
         </div>
@@ -222,8 +218,8 @@
           <h2>Innebandyn samlad.<br />Enkelt och tydligt.</h2>
         </div>
         <p>
-          Här hittar du aktuell tabell, spelade matcher och kommande omgångar.
-          Informationen uppdateras löpande under hela säsongen.
+          Här hittar du sluttabeller, matchresultat och statistik från säsongen
+          2025/2026.
         </p>
       </section>
     </main>

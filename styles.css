@@ -679,8 +679,23 @@ tbody tr:last-child td {
   color: var(--ink);
 }
 
+.analytics-share {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
+  padding-top: 14px;
+  color: var(--green);
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .analytics-card.alert-card > strong,
 .analytics-card.alert-card > p {
+  color: var(--red);
+}
+
+.analytics-card.alert-card .analytics-share {
   color: var(--red);
 }
 
