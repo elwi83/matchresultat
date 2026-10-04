@@ -120,8 +120,40 @@ function teamById(data, id) {
   return data.teams.find((team) => team.id === id);
 }
 
+const teamAppearances = [
+  { prefix: "Farsta", background: "#171717", text: "#ffffff" },
+  { prefix: "Sköndals", background: "#3987c9", text: "#111111", short: "SIK" },
+  { prefix: "Segeltorps", background: "#142f63", text: "#ffffff", short: "SIBK" },
+  { prefix: "FBI Tullinge", background: "#f28c28", text: "#111111", short: "FBI" },
+  { prefix: "Tumba", background: "#d92d32", text: "#111111" },
+  { prefix: "Värmdö", background: "#3987c9", text: "#ffffff" },
+  { prefix: "Salems", background: "#743b8f", text: "#ffffff" },
+  {
+    prefix: "Nacka",
+    background: "#ffffff",
+    text: "#111111",
+    border: "#b8bdb9",
+  },
+  { prefix: "Tyresö Trollbäcken", background: "#171717", text: "#ef3340" },
+  { prefix: "Huddinge", background: "#d92d32", text: "#ffffff" },
+  { prefix: "Älta", background: "#171717", text: "#ffd84d" },
+  { prefix: "Älvsjö", background: "#142f63", text: "#ffffff" },
+  { prefix: "Ingarö", background: "#171717", text: "#ffd84d" },
+  { prefix: "Hammarby", background: "#14783f", text: "#ffffff" },
+];
+
 function badge(team) {
-  return `<span class="team-badge" style="--team-color:${team.color}">${team.short}</span>`;
+  const appearance = teamAppearances.find(({ prefix }) => team.name.startsWith(prefix));
+  const background = appearance?.background ?? team.color;
+  const text = appearance?.text ?? "#ffffff";
+  const border = appearance?.border ?? background;
+  const short = appearance?.short ?? team.short;
+
+  return `
+    <span
+      class="team-badge"
+      style="--team-color:${background};--team-text-color:${text};--team-border-color:${border}"
+    >${short}</span>`;
 }
 
 function getMatchResult(match) {
