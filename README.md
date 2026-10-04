@@ -49,6 +49,10 @@ A visas ljusgrönt, AB ljuslila och B ljusblått. Raden **Fördelning A / AB / B
 under spelarantalet visar en staplad fördelning av de kallade och
 DS-klassificerade spelarna för varje match.
 
+För varje P15-match visas motståndarens aktuella placering i sin serietabell.
+Placeringen beräknas från samma Supabase-resultat och sorteringsregler som
+huvudsidans tabell. P14-matcher visar ingen tabellplacering.
+
 Matcher vars starttid har passerat visas under **Resultat**. Om inget resultat
 har registrerats visas texten **Resultat saknas**. Övriga matcher visas under
 **Kommande**.

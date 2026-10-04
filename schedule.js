@@ -1,4 +1,5 @@
 const schedule = window.MATCH_SCHEDULE;
+const currentSeries = window.MATCH_SERIES;
 const supabaseClient = window.supabase.createClient(
   window.APP_CONFIG.supabaseUrl,
   window.APP_CONFIG.supabasePublishableKey,
@@ -13,6 +14,8 @@ const scheduleBody = document.querySelector("#schedule-body");
 const saveStatus = document.querySelector("#save-status");
 let assignments = {};
 let dsLevels = {};
+let matchResults = {};
+let standingsPositions = {};
 const p14EligibilityMatchNumber = "p14-eligibility";
 const dsMatchNumbers = {
   A: "ds-level-a",
@@ -88,6 +91,65 @@ function getWeekDetails(value) {
   const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
   const week = Math.ceil(((date - yearStart) / 86400000 + 1) / 7);
   return { key: `${date.getUTCFullYear()}-${week}`, label: `Vecka ${week}` };
+}
+
+function calculateStandingsPositions() {
+  standingsPositions = {};
+
+  Object.values(currentSeries).forEach((series) => {
+    const table = series.teams.map((team) => ({
+      id: team.id,
+      points: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+    }));
+    const teamById = (id) => table.find((team) => team.id === id);
+
+    series.games.forEach((game) => {
+      const stored = matchResults[game[7]];
+      const result =
+        Number.isInteger(game[2]) && Number.isInteger(game[3])
+          ? { home: game[2], away: game[3] }
+          : stored;
+      if (!result) return;
+
+      const home = teamById(game[0]);
+      const away = teamById(game[1]);
+      home.goalsFor += result.home;
+      home.goalsAgainst += result.away;
+      away.goalsFor += result.away;
+      away.goalsAgainst += result.home;
+      if (result.home > result.away) home.points += 3;
+      else if (result.home < result.away) away.points += 3;
+      else {
+        home.points += 1;
+        away.points += 1;
+      }
+    });
+
+    table.sort(
+      (a, b) =>
+        b.points - a.points ||
+        b.goalsFor - b.goalsAgainst - (a.goalsFor - a.goalsAgainst) ||
+        b.goalsFor - a.goalsFor,
+    );
+    standingsPositions[series.name] = Object.fromEntries(
+      table.map((team, index) => [team.id, index + 1]),
+    );
+  });
+}
+
+function opponentPosition(match) {
+  if (match.category === "P14") return null;
+  const series = Object.values(currentSeries).find((item) => item.name.endsWith(match.series));
+  const game = series?.games.find((item) => item[7] === match.matchNumber);
+  if (!series || !game) return null;
+  const opponentId = series.teams.find((team) => team.name === match.opponent)?.id;
+  return opponentId ? standingsPositions[series.name]?.[opponentId] : null;
+}
+
+function formatPosition(position) {
+  return `${position}${position <= 2 ? ":a" : ":e"} plats`;
 }
 
 function isP14Eligible(player) {
@@ -204,6 +266,11 @@ function renderSchedule() {
                 <span class="week-label">${match.week.label}</span>
                 <span class="series-label">${match.series}</span>
                 <strong>${match.opponent}</strong>
+                ${
+                  opponentPosition(match)
+                    ? `<span class="opponent-position">${formatPosition(opponentPosition(match))}</span>`
+                    : ""
+                }
                 <span>${formatScheduleDate(match)}</span>
                 <span>${match.venue}</span>
               </div>
@@ -287,18 +354,27 @@ function renderSchedule() {
 async function loadAssignments() {
   assignments = { ...defaultAssignments };
   dsLevels = {};
-  const { data, error } = await supabaseClient
-    .from("match_assignments")
-    .select("match_number, player_name, status, updated_at");
+  matchResults = {};
+  const [assignmentResponse, resultResponse] = await Promise.all([
+    supabaseClient
+      .from("match_assignments")
+      .select("match_number, player_name, status, updated_at"),
+    supabaseClient.from("match_results").select("match_number, home_score, away_score"),
+  ]);
 
-  if (error) {
-    console.error("Kunde inte hämta matchschemat.", error);
+  if (assignmentResponse.error) {
+    console.error("Kunde inte hämta matchschemat.", assignmentResponse.error);
     loginError.textContent = "Kunde inte hämta matchschemat. Försök igen.";
+    return false;
+  }
+  if (resultResponse.error) {
+    console.error("Kunde inte hämta serieresultaten.", resultResponse.error);
+    loginError.textContent = "Kunde inte hämta serieresultaten. Försök igen.";
     return false;
   }
 
   const dsRows = {};
-  data.forEach((item) => {
+  assignmentResponse.data.forEach((item) => {
     const level = Object.entries(dsMatchNumbers).find(
       ([, matchNumber]) => matchNumber === item.match_number,
     )?.[0];
@@ -314,6 +390,13 @@ async function loadAssignments() {
   Object.entries(dsRows).forEach(([player, value]) => {
     dsLevels[player] = value.level;
   });
+  matchResults = Object.fromEntries(
+    resultResponse.data.map((result) => [
+      result.match_number,
+      { home: result.home_score, away: result.away_score },
+    ]),
+  );
+  calculateStandingsPositions();
   return true;
 }
 

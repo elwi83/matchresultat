@@ -91,22 +91,19 @@
   background: #e4f6df;
 }
 
-.ds-a-example,
 .ds-level-button.level-a,
 .distribution-a {
-  background: #dff2dc;
+  background: #b8dfb2;
 }
 
-.ds-ab-example,
 .ds-level-button.level-ab,
 .distribution-ab {
-  background: #e9e0fc;
+  background: #cfc0ee;
 }
 
-.ds-b-example,
 .ds-level-button.level-b,
 .distribution-b {
-  background: #dcecf8;
+  background: #b7d7ec;
 }
 
 .save-status {
@@ -304,6 +301,18 @@
   color: var(--ink);
   font-size: 11px;
   line-height: 1.25;
+}
+
+.match-column .opponent-position {
+  display: inline-block;
+  align-self: flex-start;
+  margin-bottom: 4px;
+  padding: 2px 5px;
+  color: white;
+  background: var(--green);
+  border-radius: 4px;
+  font-size: 8px;
+  font-weight: 800;
 }
 
 .match-column span {
