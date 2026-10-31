@@ -53,6 +53,18 @@ För varje P15-match visas motståndarens aktuella placering i sin serietabell.
 Placeringen beräknas från samma Supabase-resultat och sorteringsregler som
 huvudsidans tabell. P14-matcher visar ingen tabellplacering.
 
+Matcher i A Södra har en egen, ljusare lila bakgrund i matchschemat.
+
+Spelare och tränare kan läggas till, byta namn och tas bort direkt på
+matchschemasidan. Liständringarna lagras i Supabase och synkroniseras mellan
+enheter. Ett namnbyte skapar en ny identitet och flyttar därför inte tidigare
+matchmarkeringar, DS-nivå eller P14-inställning till det nya namnet.
+
+Knappen **Dölj tidigare matcher** tar tillfälligt bort passerade matcher från
+matchschemat. Dolda matcher räknas inte i totalantal, spelarnas summeringar
+eller fördelningsbarer. Alla tilldelningar ligger kvar oförändrade och visas
+och räknas åter när **Visa tidigare matcher** väljs.
+
 Matcher vars starttid har passerat visas under **Resultat**. Om inget resultat
 har registrerats visas texten **Resultat saknas**. Övriga matcher visas under
 **Kommande**.

@@ -16,7 +16,15 @@ let assignments = {};
 let dsLevels = {};
 let matchResults = {};
 let standingsPositions = {};
+let rosterPlayers = [...schedule.players];
+let rosterCoaches = [...schedule.coaches];
+let editingPerson = null;
+let hidePastMatches = false;
 const p14EligibilityMatchNumber = "p14-eligibility";
+const rosterMarkers = {
+  player: { added: "roster-player-added", removed: "roster-player-removed" },
+  coach: { added: "roster-coach-added", removed: "roster-coach-removed" },
+};
 const dsMatchNumbers = {
   A: "ds-level-a",
   AB: "ds-level-ab",
@@ -25,6 +33,24 @@ const dsMatchNumbers = {
 
 function assignmentKey(matchNumber, playerName) {
   return `${matchNumber}::${playerName}`;
+}
+
+function escapeHtml(value) {
+  return String(value).replace(
+    /[&<>"']/g,
+    (character) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;",
+      })[character],
+  );
+}
+
+function sortNames(names) {
+  return [...new Set(names)].sort((a, b) => a.localeCompare(b, "sv"));
 }
 
 function initialAssignments() {
@@ -93,6 +119,20 @@ function getWeekDetails(value) {
   return { key: `${date.getUTCFullYear()}-${week}`, label: `Vecka ${week}` };
 }
 
+function isPastMatch(match) {
+  return new Date(match.date).getTime() < Date.now();
+}
+
+function matchCellClasses(match) {
+  return [
+    `category-${match.category.toLowerCase()}`,
+    match.series === "A Södra" ? "series-a" : "",
+    match.weekStart ? "week-start" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
 function calculateStandingsPositions() {
   standingsPositions = {};
 
@@ -158,12 +198,13 @@ function isP14Eligible(player) {
 
 function dsButton(player) {
   const level = dsLevels[player] ?? "";
+  const safePlayer = escapeHtml(player);
   return `
     <button
       class="ds-level-button ${level ? `level-${level.toLowerCase()}` : ""}"
       type="button"
-      data-player="${player}"
-      aria-label="DS för ${player}: ${level || "inte valt"}"
+      data-player="${safePlayer}"
+      aria-label="DS för ${safePlayer}: ${level || "inte valt"}"
     >${level}</button>`;
 }
 
@@ -185,13 +226,15 @@ function assignmentButton(person, match, role) {
       : status === "assigned"
         ? "Markera som ej tillgänglig"
         : "Rensa status för";
+  const safePerson = escapeHtml(person);
+  const safeOpponent = escapeHtml(match.opponent);
   return `
     <button
       class="assignment-button ${status}"
       type="button"
       data-match-number="${match.matchNumber}"
-      data-player="${person}"
-      aria-label="${automaticallyUnavailable ? `${person} är inte tillgänglig för P14` : `${action} ${person}, ${match.opponent}`}"
+      data-player="${safePerson}"
+      aria-label="${automaticallyUnavailable ? `${safePerson} är inte tillgänglig för P14` : `${action} ${safePerson}, ${safeOpponent}`}"
       ${automaticallyUnavailable ? "disabled" : ""}
     >${symbol}</button>`;
 }
@@ -208,11 +251,30 @@ function personRow(person, matches, role) {
     if (aMatches) details.push(`${aMatches} A`);
     if (p14Matches) details.push(`${p14Matches} P14`);
   }
+  const safePerson = escapeHtml(person);
 
   return `
     <tr class="${role}-row">
       <th scope="row">
-        ${person}
+        <span class="person-heading">
+          <span>${safePerson}</span>
+          <span class="person-actions">
+            <button
+              type="button"
+              class="edit-person-button"
+              data-person="${safePerson}"
+              data-role="${role}"
+              aria-label="Ändra ${safePerson}"
+            >Ändra</button>
+            <button
+              type="button"
+              class="delete-person-button"
+              data-person="${safePerson}"
+              data-role="${role}"
+              aria-label="Ta bort ${safePerson}"
+            >×</button>
+          </span>
+        </span>
         <span class="player-total">${details.join(" · ")}</span>
       </th>
       <td class="ds-level-cell">
@@ -224,9 +286,9 @@ function personRow(person, matches, role) {
             ? `<button
                 class="p14-eligibility-button ${isP14Eligible(person) ? "eligible" : ""}"
                 type="button"
-                data-player="${person}"
+                data-player="${safePerson}"
                 aria-pressed="${isP14Eligible(person)}"
-                aria-label="${isP14Eligible(person) ? `Ta bort P14 för ${person}` : `Gör ${person} tillgänglig för P14`}"
+                aria-label="${isP14Eligible(person) ? `Ta bort P14 för ${safePerson}` : `Gör ${safePerson} tillgänglig för P14`}"
               >${isP14Eligible(person) ? "Ja" : ""}</button>`
             : '<span class="not-applicable">–</span>'
         }
@@ -234,7 +296,7 @@ function personRow(person, matches, role) {
       ${matches
         .map(
           (match) => `
-            <td class="category-${match.category.toLowerCase()} ${match.weekStart ? "week-start" : ""}">
+            <td class="${matchCellClasses(match)}">
               ${assignmentButton(person, match, role)}
             </td>`,
         )
@@ -243,12 +305,22 @@ function personRow(person, matches, role) {
 }
 
 function renderSchedule() {
-  const matches = schedule.matches.map((match, index) => {
+  const pastMatchCount = schedule.matches.filter(isPastMatch).length;
+  const visibleMatches = hidePastMatches
+    ? schedule.matches.filter((match) => !isPastMatch(match))
+    : schedule.matches;
+  const matches = visibleMatches.map((match, index) => {
     const week = getWeekDetails(match.date);
-    const previousWeek = index ? getWeekDetails(schedule.matches[index - 1].date).key : null;
+    const previousWeek = index ? getWeekDetails(visibleMatches[index - 1].date).key : null;
     return { ...match, week, weekStart: week.key !== previousWeek };
   });
   document.querySelector("#schedule-match-count").textContent = matches.length;
+  const pastMatchToggle = document.querySelector("#past-match-toggle");
+  pastMatchToggle.setAttribute("aria-pressed", hidePastMatches);
+  pastMatchToggle.textContent = hidePastMatches
+    ? `Visa tidigare matcher (${pastMatchCount})`
+    : `Dölj tidigare matcher (${pastMatchCount})`;
+  pastMatchToggle.classList.toggle("active", hidePastMatches);
 
   scheduleHead.innerHTML = `
     <tr>
@@ -260,7 +332,7 @@ function renderSchedule() {
           (match) => `
             <th
               scope="col"
-              class="category-${match.category.toLowerCase()} ${match.weekStart ? "week-start" : ""}"
+              class="${matchCellClasses(match)}"
             >
               <div class="match-column" title="${match.home} – ${match.away}">
                 <span class="week-label">${match.week.label}</span>
@@ -279,26 +351,26 @@ function renderSchedule() {
         .join("")}
     </tr>`;
 
-  const playerRows = schedule.players
+  const playerRows = rosterPlayers
     .map((player) => personRow(player, matches, "player"))
     .join("");
   const countRow = `
     <tr class="player-count-row">
       <th scope="row">Antal spelare</th>
       <td class="ds-level-cell">
-        <strong>${schedule.players.filter((player) => dsLevels[player]).length}</strong>
+        <strong>${rosterPlayers.filter((player) => dsLevels[player]).length}</strong>
         <span class="eligible-total-label">klassade</span>
       </td>
       <td class="p14-eligibility-cell">
-        <strong>${schedule.players.filter(isP14Eligible).length}</strong>
+        <strong>${rosterPlayers.filter(isP14Eligible).length}</strong>
         <span class="eligible-total-label">Ja</span>
       </td>
       ${matches
         .map((match) => {
-          const count = schedule.players.filter(
+          const count = rosterPlayers.filter(
             (player) => effectiveStatus(player, match, "player") === "assigned",
           ).length;
-          return `<td class="category-${match.category.toLowerCase()} ${match.weekStart ? "week-start" : ""}"><strong>${count}</strong></td>`;
+          return `<td class="${matchCellClasses(match)}"><strong>${count}</strong></td>`;
         })
         .join("")}
     </tr>`;
@@ -310,7 +382,7 @@ function renderSchedule() {
       ${matches
         .map((match) => {
           const counts = { A: 0, AB: 0, B: 0 };
-          schedule.players.forEach((player) => {
+          rosterPlayers.forEach((player) => {
             if (effectiveStatus(player, match, "player") === "assigned" && dsLevels[player]) {
               counts[dsLevels[player]] += 1;
             }
@@ -324,7 +396,7 @@ function renderSchedule() {
             )
             .join("");
           return `
-            <td class="category-${match.category.toLowerCase()} ${match.weekStart ? "week-start" : ""}">
+            <td class="${matchCellClasses(match)}">
               <div class="distribution-bar ${total ? "" : "empty"}">${segments}</div>
               <span class="distribution-label">${
                 total ? `A ${counts.A} · AB ${counts.AB} · B ${counts.B}` : "Ej klassat"
@@ -341,11 +413,11 @@ function renderSchedule() {
       ${matches
         .map(
           (match) =>
-            `<td class="category-${match.category.toLowerCase()} ${match.weekStart ? "week-start" : ""}"></td>`,
+            `<td class="${matchCellClasses(match)}"></td>`,
         )
         .join("")}
     </tr>`;
-  const coachRows = schedule.coaches
+  const coachRows = rosterCoaches
     .map((coach) => personRow(coach, matches, "coach"))
     .join("");
   scheduleBody.innerHTML = playerRows + countRow + distributionRow + coachHeading + coachRows;
@@ -355,6 +427,8 @@ async function loadAssignments() {
   assignments = { ...defaultAssignments };
   dsLevels = {};
   matchResults = {};
+  rosterPlayers = [...schedule.players];
+  rosterCoaches = [...schedule.coaches];
   const [assignmentResponse, resultResponse] = await Promise.all([
     supabaseClient
       .from("match_assignments")
@@ -374,7 +448,21 @@ async function loadAssignments() {
   }
 
   const dsRows = {};
+  const rosterChanges = {
+    player: { added: new Set(), removed: new Set() },
+    coach: { added: new Set(), removed: new Set() },
+  };
   assignmentResponse.data.forEach((item) => {
+    const rosterEntry = Object.entries(rosterMarkers).find(
+      ([, markers]) =>
+        item.match_number === markers.added || item.match_number === markers.removed,
+    );
+    if (rosterEntry) {
+      const [role, markers] = rosterEntry;
+      const change = item.match_number === markers.added ? "added" : "removed";
+      rosterChanges[role][change].add(item.player_name);
+      return;
+    }
     const level = Object.entries(dsMatchNumbers).find(
       ([, matchNumber]) => matchNumber === item.match_number,
     )?.[0];
@@ -390,6 +478,14 @@ async function loadAssignments() {
   Object.entries(dsRows).forEach(([player, value]) => {
     dsLevels[player] = value.level;
   });
+  rosterPlayers = sortNames([
+    ...schedule.players.filter((name) => !rosterChanges.player.removed.has(name)),
+    ...rosterChanges.player.added,
+  ]);
+  rosterCoaches = sortNames([
+    ...schedule.coaches.filter((name) => !rosterChanges.coach.removed.has(name)),
+    ...rosterChanges.coach.added,
+  ]);
   matchResults = Object.fromEntries(
     resultResponse.data.map((result) => [
       result.match_number,
@@ -451,6 +547,30 @@ document.querySelector("#logout-button").addEventListener("click", async () => {
 });
 
 scheduleBody.addEventListener("click", async (event) => {
+  const editButton = event.target.closest(".edit-person-button");
+  if (editButton) {
+    openPersonDialog(editButton.dataset.role, editButton.dataset.person);
+    return;
+  }
+
+  const deleteButton = event.target.closest(".delete-person-button");
+  if (deleteButton) {
+    const { role, person } = deleteButton.dataset;
+    const roleLabel = role === "player" ? "spelaren" : "tränaren";
+    if (!window.confirm(`Ta bort ${roleLabel} ${person}?`)) return;
+
+    deleteButton.disabled = true;
+    if (!(await persistRosterPresence(role, person, false))) {
+      deleteButton.disabled = false;
+      return;
+    }
+    if (role === "player") rosterPlayers = rosterPlayers.filter((name) => name !== person);
+    else rosterCoaches = rosterCoaches.filter((name) => name !== person);
+    renderSchedule();
+    showSavedMessage("Namnet är borttaget.");
+    return;
+  }
+
   const dsLevelButton = event.target.closest(".ds-level-button");
   if (dsLevelButton) {
     const playerName = dsLevelButton.dataset.player;
@@ -489,6 +609,137 @@ scheduleBody.addEventListener("click", async (event) => {
         ? "unavailable"
         : "available";
   await persistAssignmentStatus(button, matchNumber, playerName, nextStatus);
+});
+
+function openPersonDialog(role, person = null) {
+  editingPerson = { role, person };
+  const isPlayer = role === "player";
+  document.querySelector("#person-dialog-eyebrow").textContent =
+    isPlayer ? "Spelare" : "Tränare";
+  document.querySelector("#person-dialog-title").textContent = person
+    ? "Ändra namn"
+    : `Lägg till ${isPlayer ? "spelare" : "tränare"}`;
+  document.querySelector("#person-name").value = person ?? "";
+  document.querySelector("#person-error").textContent = "";
+  document.querySelector("#person-dialog").showModal();
+  document.querySelector("#person-name").focus();
+}
+
+function allRosterNames() {
+  return [...rosterPlayers, ...rosterCoaches];
+}
+
+async function persistRosterPresence(role, person, present) {
+  const markers = rosterMarkers[role];
+  const defaults = role === "player" ? schedule.players : schedule.coaches;
+  const isDefault = defaults.includes(person);
+  const markerToKeep = present
+    ? isDefault
+      ? null
+      : markers.added
+    : isDefault
+      ? markers.removed
+      : null;
+
+  const { error: deleteError } = await supabaseClient
+    .from("match_assignments")
+    .delete()
+    .in("match_number", [markers.added, markers.removed])
+    .eq("player_name", person);
+  if (deleteError) {
+    console.error("Kunde inte uppdatera namnlistan.", deleteError);
+    saveStatus.classList.add("error");
+    saveStatus.textContent = "Namnlistan kunde inte uppdateras. Försök igen.";
+    return false;
+  }
+
+  if (!markerToKeep) return true;
+  const { error: upsertError } = await supabaseClient.from("match_assignments").upsert({
+    match_number: markerToKeep,
+    player_name: person,
+    assigned: true,
+    status: "assigned",
+    updated_at: new Date().toISOString(),
+  });
+  if (upsertError) {
+    console.error("Kunde inte spara namnet.", upsertError);
+    saveStatus.classList.add("error");
+    saveStatus.textContent = "Namnet kunde inte sparas. Försök igen.";
+    return false;
+  }
+  return true;
+}
+
+function showSavedMessage(message) {
+  saveStatus.classList.remove("error");
+  saveStatus.textContent = message;
+  window.setTimeout(() => {
+    if (saveStatus.textContent === message) saveStatus.textContent = "";
+  }, 2500);
+}
+
+document.querySelectorAll("[data-add-role]").forEach((button) => {
+  button.addEventListener("click", () => openPersonDialog(button.dataset.addRole));
+});
+
+document.querySelector("#past-match-toggle").addEventListener("click", () => {
+  hidePastMatches = !hidePastMatches;
+  renderSchedule();
+});
+
+document.querySelector("#person-dialog-close").addEventListener("click", () => {
+  document.querySelector("#person-dialog").close();
+});
+
+document.querySelector("#person-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const nextName = document.querySelector("#person-name").value.trim().replace(/\s+/g, " ");
+  const errorElement = document.querySelector("#person-error");
+  const submitButton = event.submitter;
+  const { role, person: previousName } = editingPerson;
+
+  if (!nextName) {
+    errorElement.textContent = "Ange ett namn.";
+    return;
+  }
+  const duplicate = allRosterNames().some(
+    (name) =>
+      name !== previousName && name.localeCompare(nextName, "sv", { sensitivity: "base" }) === 0,
+  );
+  if (duplicate) {
+    errorElement.textContent = "Namnet finns redan i spelar- eller tränarlistan.";
+    return;
+  }
+
+  submitButton.disabled = true;
+  submitButton.textContent = "Sparar…";
+  let saved = true;
+  if (!previousName || previousName !== nextName) {
+    saved = await persistRosterPresence(role, nextName, true);
+    if (saved && previousName) {
+      saved = await persistRosterPresence(role, previousName, false);
+      if (!saved) await persistRosterPresence(role, nextName, false);
+    }
+  }
+  submitButton.disabled = false;
+  submitButton.textContent = "Spara";
+  if (!saved) {
+    errorElement.textContent = "Namnet kunde inte sparas. Försök igen.";
+    return;
+  }
+
+  if (previousName !== nextName) {
+    const roster = role === "player" ? rosterPlayers : rosterCoaches;
+    const nextRoster = sortNames([
+      ...roster.filter((name) => name !== previousName),
+      nextName,
+    ]);
+    if (role === "player") rosterPlayers = nextRoster;
+    else rosterCoaches = nextRoster;
+  }
+  document.querySelector("#person-dialog").close();
+  renderSchedule();
+  showSavedMessage(previousName ? "Namnet är ändrat." : "Namnet är tillagt.");
 });
 
 async function persistDsLevel(button, playerName, nextLevel) {
@@ -569,10 +820,7 @@ async function persistAssignmentStatus(button, matchNumber, playerName, nextStat
 
   assignments[key] = nextStatus;
   renderSchedule();
-  saveStatus.textContent = "Ändringen är sparad.";
-  window.setTimeout(() => {
-    if (saveStatus.textContent === "Ändringen är sparad.") saveStatus.textContent = "";
-  }, 2500);
+  showSavedMessage("Ändringen är sparad.");
 }
 
 const menuButton = document.querySelector(".menu-button");

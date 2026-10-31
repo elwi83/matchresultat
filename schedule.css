@@ -22,6 +22,46 @@
   font-size: 12px;
 }
 
+.schedule-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.roster-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.roster-actions button {
+  padding: 10px 13px;
+  color: var(--green);
+  background: white;
+  border: 1px solid rgb(7 92 60 / 25%);
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.roster-actions button:hover {
+  color: white;
+  background: var(--green);
+}
+
+.roster-actions .past-match-toggle {
+  color: var(--ink);
+  background: var(--cream);
+  border-color: var(--line);
+}
+
+.roster-actions .past-match-toggle:hover,
+.roster-actions .past-match-toggle.active {
+  color: white;
+  background: var(--green);
+  border-color: var(--green);
+}
+
 .schedule-help {
   display: flex;
   align-items: center;
@@ -175,6 +215,15 @@
   background: #def2d9;
 }
 
+.schedule-table th.category-p15.series-a,
+.schedule-table td.category-p15.series-a {
+  background: #faf7ff;
+}
+
+.schedule-table thead th.category-p15.series-a {
+  background: #f5efff;
+}
+
 .schedule-table th.week-start,
 .schedule-table td.week-start {
   border-left: 4px solid var(--green);
@@ -261,6 +310,10 @@
 
 .schedule-table tbody tr:hover td.category-p14 {
   background: #e1f3dd;
+}
+
+.schedule-table tbody tr:hover td.category-p15.series-a {
+  background: #f6f0fd;
 }
 
 .match-column {
@@ -441,6 +494,76 @@
   font-weight: 500;
 }
 
+.person-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.person-actions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.player-row:hover .person-actions,
+.coach-row:hover .person-actions,
+.person-actions:focus-within {
+  opacity: 1;
+}
+
+.person-actions button {
+  padding: 3px 5px;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  font-size: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.person-actions button:hover,
+.person-actions button:focus-visible {
+  color: white;
+  background: var(--green);
+  outline: none;
+}
+
+.person-actions .delete-person-button:hover,
+.person-actions .delete-person-button:focus-visible {
+  background: var(--red);
+}
+
+.roster-dialog form {
+  padding: 34px;
+}
+
+.person-name-label {
+  display: block;
+  margin: 28px 0 7px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.roster-dialog input {
+  width: 100%;
+  padding: 13px 14px;
+  color: var(--ink);
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: none;
+}
+
+.roster-dialog input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgb(7 92 60 / 12%);
+}
+
 .player-count-row th,
 .player-count-row td {
   border-top: 3px solid var(--green);
@@ -531,5 +654,19 @@
 
   .schedule-summary {
     align-self: flex-start;
+  }
+
+  .schedule-heading-actions {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+    gap: 14px;
+  }
+
+  .roster-actions {
+    flex-wrap: wrap;
+  }
+
+  .person-actions {
+    opacity: 1;
   }
 }

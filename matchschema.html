@@ -87,9 +87,21 @@
               <p class="eyebrow dark">Segeltorp P15</p>
               <h2>Spelarschema</h2>
             </div>
-            <div class="schedule-summary">
-              <strong id="schedule-match-count">45</strong>
-              <span>matcher för P14 och P15</span>
+            <div class="schedule-heading-actions">
+              <div class="roster-actions">
+                <button
+                  class="past-match-toggle"
+                  id="past-match-toggle"
+                  type="button"
+                  aria-pressed="false"
+                >Dölj tidigare matcher</button>
+                <button type="button" data-add-role="player">Lägg till spelare</button>
+                <button type="button" data-add-role="coach">Lägg till tränare</button>
+              </div>
+              <div class="schedule-summary">
+                <strong id="schedule-match-count">45</strong>
+                <span>matcher för P14 och P15</span>
+              </div>
             </div>
           </div>
 
@@ -119,6 +131,31 @@
           </div>
         </section>
       </main>
+
+      <dialog class="result-dialog roster-dialog" id="person-dialog" aria-labelledby="person-dialog-title">
+        <form id="person-form">
+          <div class="dialog-heading">
+            <div>
+              <p class="eyebrow dark" id="person-dialog-eyebrow">Spelare</p>
+              <h2 id="person-dialog-title">Lägg till namn</h2>
+            </div>
+            <button class="dialog-close" type="button" id="person-dialog-close" aria-label="Stäng">×</button>
+          </div>
+          <label class="person-name-label" for="person-name">Namn</label>
+          <input
+            id="person-name"
+            name="personName"
+            type="text"
+            autocomplete="off"
+            maxlength="80"
+            required
+          />
+          <p class="login-error" id="person-error" role="alert" aria-live="polite"></p>
+          <div class="dialog-actions">
+            <button class="login-button" type="submit">Spara</button>
+          </div>
+        </form>
+      </dialog>
     </div>
   </body>
 </html>
